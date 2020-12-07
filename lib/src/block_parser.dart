@@ -11,6 +11,8 @@ import 'util.dart';
 /// The line contains only whitespace or is empty.
 final _emptyPattern = RegExp(r'^(?:[ \t]*)$');
 
+final _tableColumnSizePattern = RegExp(r'(\[\[(\d*)\]\])');
+
 /// A series of `=` or `-` (on the next line) define setext-style headers.
 final _setextPattern = RegExp(r'^[ ]{0,3}(=+|-+)\s*$');
 
@@ -891,7 +893,9 @@ class TableSyntax extends BlockSyntax {
       return null;
     }
     var head = Element('thead', [headRow]);
-
+    var sizes = headRow.children
+        .map((row) => (row as Element).attributes['size'] ?? '0')
+        .toList();
     // Advance past the divider of hyphens.
     parser.advance();
 
@@ -914,11 +918,12 @@ class TableSyntax extends BlockSyntax {
       rows.add(row);
     }
     if (rows.isEmpty) {
-      return Element('table', [head]);
+      return Element('table', [head])..attributes['sizes'] = sizes.join(',');
     } else {
-      var body = Element('tbody', rows);
+      var body = Element('tbody', rows)..attributes['sizes'] = sizes.join(',');
 
-      return Element('table', [head, body]);
+      return Element('table', [head, body])
+        ..attributes['sizes'] = sizes.join(',');
     }
   }
 
@@ -1009,9 +1014,38 @@ class TableSyntax extends BlockSyntax {
       }
     }
     parser.advance();
+
+    var sizes = <num>[];
+    if (cellType == 'th') {
+      for (var cell in cells) {
+        var match = _tableColumnSizePattern.firstMatch(cell);
+        if (match == null) {
+          sizes.add(0);
+          continue;
+        }
+        var sizeStr = match.group(2);
+        if (sizeStr == null) {
+          sizes.add(0);
+          continue;
+        }
+        var size = double.tryParse(sizeStr);
+        sizes.add(size ?? 0);
+      }
+      cells = cells
+          .map((s) => s.replaceAllMapped(_tableColumnSizePattern, (m) => ''))
+          .toList();
+      print(cells);
+    }
+
     var row = [
       for (var cell in cells) Element(cellType, [UnparsedContent(cell)])
     ];
+
+    if (sizes.isNotEmpty) {
+      for (var i = 0; i < row.length && i < sizes.length; i++) {
+        row[i].attributes['size'] = sizes[i].toString();
+      }
+    }
 
     for (var i = 0; i < row.length && i < alignments.length; i++) {
       if (alignments[i] == null) continue;
