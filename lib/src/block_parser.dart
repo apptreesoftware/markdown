@@ -1034,7 +1034,6 @@ class TableSyntax extends BlockSyntax {
       cells = cells
           .map((s) => s.replaceAllMapped(_tableColumnSizePattern, (m) => ''))
           .toList();
-      print(cells);
     }
 
     var row = [
