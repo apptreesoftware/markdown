@@ -1,3 +1,29 @@
+## 4.0.1-dev
+
+* Enforce lint rules found in pedantic 1.11.0.
+
+## 4.0.0
+
+* Stable null safety release.
+* Require the latest `args`, update the markdown executable to be opted in.
+
+## 4.0.0-nullsafety.0
+
+* Migrate package to Dart's null safety language feature, requiring Dart
+  2.12 or higher.
+* **Breaking change:** The TagSyntax constructor no longer takes an `end`
+  parameter. TagSyntax no longer implements `onMatchEnd`. Instead, TagSyntax
+  implements a method called `close` which creates and returns a Node, if a
+  Node can be created and closed at the current position. If the TagSyntax
+  instance cannot create a Node at the current position, the method should
+  return `null`. Some TagSyntax subclasses will unconditionally create a tag in
+  `close`, while others may be unable to, such as LinkSyntax, if an inline or
+  reference link could not be resolved.
+* Improved parsing of nested links, images, and emphasis. CommonMark compliance
+  of emphasis-parsing improves to 99%, and link-parsing compliance rises to
+  93%. Overall compliance improves to 94% and overall GitHub-flavored Markdown
+  improves to 93%.
+
 ## 3.0.0
 
 * **Breaking change:** Remove `ListSyntax.removeLeadingEmptyLine`,
