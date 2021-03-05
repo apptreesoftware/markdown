@@ -893,7 +893,7 @@ class TableSyntax extends BlockSyntax {
       return null;
     }
     var head = Element('thead', [headRow]);
-    var sizes = headRow.children
+    var sizes = headRow.children!
         .map((row) => (row as Element).attributes['size'] ?? '0')
         .toList();
     // Advance past the divider of hyphens.
